@@ -4,6 +4,8 @@ import time
 import uvicorn
 import webview
 
+from app.bridge import Api
+
 
 def start_server():
     uvicorn.run(
@@ -14,18 +16,17 @@ def start_server():
     )
 
 
-server_thread = threading.Thread(
+threading.Thread(
     target=start_server,
     daemon=True
-)
-
-server_thread.start()
+).start()
 
 time.sleep(2)
 
 webview.create_window(
     "POD5Plot",
     "http://127.0.0.1:8000",
+    js_api=Api(),
     width=1200,
     height=800
 )
