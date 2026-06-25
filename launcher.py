@@ -7,28 +7,50 @@ import webview
 from app.bridge import Api
 
 
+HOST = "127.0.0.1"
+PORT = 8000
+
+WINDOW_TITLE = "POD5Plot"
+
+WINDOW_WIDTH = 1200
+WINDOW_HEIGHT = 800
+
+MIN_WIDTH = 1000
+MIN_HEIGHT = 700
+
+
 def start_server():
     uvicorn.run(
         "main:app",
-        host="127.0.0.1",
-        port=8000,
-        reload=False
+        host=HOST,
+        port=PORT,
+        reload=False,
+        log_level="warning"
     )
 
 
-threading.Thread(
-    target=start_server,
-    daemon=True
-).start()
+def main():
 
-time.sleep(2)
+    threading.Thread(
+        target=start_server,
+        daemon=True
+    ).start()
 
-webview.create_window(
-    "POD5Plot",
-    "http://127.0.0.1:8000",
-    js_api=Api(),
-    width=1200,
-    height=800
-)
+    # Wait for FastAPI to start
+    time.sleep(1)
 
-webview.start()
+    webview.create_window(
+        title=WINDOW_TITLE,
+        url=f"http://{HOST}:{PORT}",
+        js_api=Api(),
+        width=WINDOW_WIDTH,
+        height=WINDOW_HEIGHT,
+        min_size=(MIN_WIDTH, MIN_HEIGHT),
+        resizable=True
+    )
+
+    webview.start()
+
+
+if __name__ == "__main__":
+    main()

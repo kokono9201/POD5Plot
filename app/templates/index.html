@@ -1,32 +1,237 @@
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
 
 <head>
 
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>POD5Plot</title>
+
+    <link rel="stylesheet" href="/static/css/style.css">
 
 </head>
 
 <body>
 
-<h1>POD5Plot</h1>
+<div class="container">
 
-<button id="select-btn">
+    <!-- ====================================================== -->
+    <!-- HOME PAGE -->
+    <!-- ====================================================== -->
 
-Select POD5 File
+    <section id="home-page">
 
-</button>
+        <div class="home-card">
 
-<br><br>
+            <h1>POD5Plot</h1>
 
-<div id="selected-file">
+            <p class="subtitle">
 
-No file selected
+                Visual Analytics for Oxford Nanopore POD5
+
+            </p>
+
+            <hr>
+
+            <h3>
+
+                Selected POD5
+
+            </h3>
+
+            <p id="selected-file">
+
+                No file selected
+
+            </p>
+
+            <div class="button-group">
+
+                <button id="select-btn">
+
+                    Select POD5 File
+
+                </button>
+
+                <button id="analyze-btn">
+
+                    Analyze
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ====================================================== -->
+    <!-- DASHBOARD -->
+    <!-- ====================================================== -->
+
+    <section
+        id="dashboard-page"
+        style="display:none;"
+    >
+
+        <!-- ================================================== -->
+        <!-- HEADER -->
+        <!-- ================================================== -->
+
+        <header class="dashboard-header">
+
+            <div>
+
+                <h1>POD5Plot</h1>
+
+                <p id="current-file"></p>
+
+            </div>
+
+            <div class="button-group">
+
+                <button id="copy-summary">
+
+                    Copy Summary
+
+                </button>
+
+                <button id="copy-run-info">
+
+                    Copy Run Info
+
+                </button>
+
+                <button id="export-dashboard">
+
+                    Export
+
+                </button>
+
+            </div>
+
+        </header>
+
+
+
+        <!-- ================================================== -->
+        <!-- SUMMARY -->
+        <!-- ================================================== -->
+
+        <section class="dashboard-section">
+
+            <h2>
+
+                Summary
+
+            </h2>
+
+            <div id="summary">
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ================================================== -->
+        <!-- RUN INFORMATION -->
+        <!-- ================================================== -->
+
+        <section class="dashboard-section">
+
+            <h2>
+
+                Run Information
+
+            </h2>
+
+            <table id="run-info-table">
+
+                <tbody>
+
+                </tbody>
+
+            </table>
+
+        </section>
+
+
+
+        <!-- ================================================== -->
+        <!-- PLOTS -->
+        <!-- ================================================== -->
+
+        <section class="dashboard-section">
+
+            <div class="plot-header">
+
+                <h2>
+
+                    Plots
+
+                </h2>
+
+                <button id="add-plot">
+
+                    Add Plot
+
+                </button>
+
+            </div>
+
+            <div id="plots">
+
+            </div>
+
+        </section>
+
+    </section>
 
 </div>
 
-<script src="/static/js/main.js"></script>
+
+
+<!-- ====================================================== -->
+<!-- LOADING OVERLAY -->
+<!-- ====================================================== -->
+
+<div id="loading-overlay">
+
+    <div class="loading-box">
+
+        <div class="spinner"></div>
+
+        <h2 id="loading-title">
+
+            Analyzing POD5...
+
+        </h2>
+
+        <p>
+
+            This may take a few moments.
+
+        </p>
+
+    </div>
+
+</div>
+
+
+
+<script src="/static/js/api.js"></script>
+
+<script src="/static/js/summary.js"></script>
+
+<script src="/static/js/plot.js"></script>
+
+<script src="/static/js/app.js"></script>
 
 </body>
 

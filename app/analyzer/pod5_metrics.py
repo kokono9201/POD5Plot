@@ -1,71 +1,37 @@
-from __future__ import annotations
-
-import pandas as pd
-
-
 class Pod5Metrics:
 
-    def __init__(self, dataframe: pd.DataFrame):
+    def __init__(self, dataframe):
+
         self.df = dataframe
 
-    def summary(self) -> dict:
-        """
-        Calculate summary statistics for the loaded POD5 dataframe.
-        """
+        self.metrics = {}
 
-        summary = {}
+    def calculate(self):
 
-        summary["total_reads"] = len(self.df)
+        df = self.df
 
-        if "start_time" in self.df.columns:
-            summary["start_time"] = self.df["start_time"].min()
+        self.metrics = {
 
-        if "end_time" in self.df.columns:
-            summary["end_time"] = self.df["end_time"].max()
+            "Total Reads":
+                len(df),
 
-        if (
-            "start_time" in self.df.columns and
-            "end_time" in self.df.columns
-        ):
-            summary["run_duration"] = (
-                summary["end_time"] -
-                summary["start_time"]
-            )
+            "Run Duration (s)":
+                df["end_time"].max()
+                -
+                df["start_time"].min(),
 
-        if "duration" in self.df.columns:
+            "Mean Duration (s)":
+                df["duration"].mean(),
 
-            summary["mean_duration"] = (
-                self.df["duration"].mean()
-            )
+            "Median Duration (s)":
+                df["duration"].median(),
 
-            summary["median_duration"] = (
-                self.df["duration"].median()
-            )
+            "Mean Samples":
+                df["num_samples"].mean(),
 
-            summary["max_duration"] = (
-                self.df["duration"].max()
-            )
+            "Median Samples":
+                df["num_samples"].median(),
 
-            summary["min_duration"] = (
-                self.df["duration"].min()
-            )
+        }
 
-        if "num_samples" in self.df.columns:
-
-            summary["mean_samples"] = (
-                self.df["num_samples"].mean()
-            )
-
-            summary["median_samples"] = (
-                self.df["num_samples"].median()
-            )
-
-            summary["max_samples"] = (
-                self.df["num_samples"].max()
-            )
-
-            summary["min_samples"] = (
-                self.df["num_samples"].min()
-            )
-
-        return summary
+        return self.metrics
