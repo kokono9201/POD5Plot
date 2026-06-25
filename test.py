@@ -1,17 +1,18 @@
-from app.services.file_service import FileService
+from app.analyzer.pod5_analyzer import Pod5Analyzer
+from app.analyzer.pod5_metrics import Pod5Metrics
 
+analyzer = Pod5Analyzer(
 
-class Api:
-    def __init__(self):
-        self.file_service = FileService()
+    r"C:\Users\ychen\Downloads\PBK49690_7a41d753_0396ad4d_28.pod5"
 
-    def select_pod5(self):
-        pod5 = self.file_service.browse()
+)
 
-        if pod5 is None:
-            return None
+df = analyzer.load()
 
-        return {
-            "path": pod5.path,
-            "filename": pod5.filename
-        }
+metrics = Pod5Metrics(df)
+
+print(df.head())
+
+print(df.columns)
+
+print(metrics.summary())
