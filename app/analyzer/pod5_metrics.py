@@ -35,3 +35,8 @@ class Pod5Metrics:
         }
 
         return self.metrics
+
+    def names(self):
+
+        return list(self.metrics.keys())
+

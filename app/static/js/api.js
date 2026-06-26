@@ -1,9 +1,17 @@
+/* ==========================================================
+   File
+========================================================== */
+
 async function selectPod5() {
 
     return await window.pywebview.api.select_pod5();
 
 }
 
+
+/* ==========================================================
+   Analyze
+========================================================== */
 
 async function analyze() {
 
@@ -12,12 +20,20 @@ async function analyze() {
 }
 
 
+/* ==========================================================
+   Summary
+========================================================== */
+
 async function getSummary() {
 
     return await window.pywebview.api.get_summary();
 
 }
 
+
+/* ==========================================================
+   Run Information
+========================================================== */
 
 async function getRunInfo() {
 
@@ -26,15 +42,47 @@ async function getRunInfo() {
 }
 
 
-async function getColumns() {
+/* ==========================================================
+   Plot Options
+========================================================== */
 
-    return await window.pywebview.api.get_columns();
+async function getPlotOptions() {
+
+    return await window.pywebview.api.get_plot_options();
 
 }
 
 
-async function exportPdf() {
+/* ==========================================================
+   Plot
+========================================================== */
 
-    return await window.pywebview.api.export_pdf();
+async function generatePlot(
+    x,
+    y,
+    bins = 20
+) {
+
+    return await window.pywebview.api.generate_plot(
+        x,
+        y,
+        bins
+    );
+
+}
+
+/* ==========================================================
+   Export
+========================================================== */
+
+async function exportDashboard(
+    html,
+    filename
+) {
+
+    return await window.pywebview.api.export_dashboard(
+        html,
+        filename
+    );
 
 }

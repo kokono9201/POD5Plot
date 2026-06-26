@@ -5,20 +5,24 @@ let pod5 = null;
    Loading
 ========================================================== */
 
-function showLoading(message = "Analyzing POD5...") {
+function showLoading(message = "Loading...") {
 
     const overlay = document.getElementById("loading-overlay");
 
     overlay.style.display = "flex";
 
-    overlay.querySelector("h2").innerText = message;
+    document
+        .getElementById("loading-title")
+        .innerText = message;
 
 }
 
 
 function hideLoading() {
 
-    document.getElementById("loading-overlay").style.display = "none";
+    document
+        .getElementById("loading-overlay")
+        .style.display = "none";
 
 }
 
@@ -33,6 +37,8 @@ async function initializeDashboard() {
 
     await loadRunInfo();
 
+    await initializePlots();
+
 }
 
 
@@ -42,7 +48,7 @@ async function initializeDashboard() {
 
 document
     .getElementById("select-btn")
-    .onclick = async () => {
+    .addEventListener("click", async () => {
 
         pod5 = await selectPod5();
 
@@ -53,7 +59,7 @@ document
             .getElementById("selected-file")
             .innerText = pod5.filename;
 
-    };
+    });
 
 
 /* ==========================================================
@@ -62,7 +68,7 @@ document
 
 document
     .getElementById("analyze-btn")
-    .onclick = async () => {
+    .addEventListener("click", async () => {
 
         if (!pod5)
             return;
@@ -90,7 +96,7 @@ document
 
         await initializeDashboard();
 
-    };
+    });
 
 
 /* ==========================================================
@@ -99,25 +105,168 @@ document
 
 document
     .getElementById("copy-summary")
-    .onclick = copySummary;
+    .addEventListener("click", copySummary);
 
 
 document
     .getElementById("copy-run-info")
-    .onclick = copyRunInfo;
+    .addEventListener("click", copyRunInfo);
 
 
 /* ==========================================================
-   Export Dashboard
+   Export
 ========================================================== */
 
+async function buildDashboardExportHtml() {
+
+    const dashboard = document
+        .getElementById("dashboard-page")
+        .cloneNode(true);
+
+    dashboard.style.display = "block";
+
+    dashboard
+        .querySelectorAll("button")
+        .forEach(button => {
+
+            button.remove();
+
+        });
+
+    dashboard
+        .querySelectorAll(".button-group")
+        .forEach(group => {
+
+            if (group.children.length === 0) {
+
+                group.remove();
+
+            }
+
+        });
+
+    let css = "";
+
+    try {
+
+        const response = await fetch(
+            "/static/css/style.css"
+        );
+
+        css = await response.text();
+
+    }
+
+    catch (err) {
+
+        console.error(
+            "Failed to load CSS for export:",
+            err
+        );
+
+    }
+
+    const title = pod5
+        ? pod5.filename
+        : "POD5Plot Dashboard";
+
+    return `
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>${title}</title>
+
+    <style>
+
+        ${css}
+
+        body {
+            background: #f5f6fa;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        .plot-output {
+            min-height: 500px;
+            width: 100%;
+        }
+
+        .plotly-graph-div {
+            min-height: 500px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        ${dashboard.outerHTML}
+
+    </div>
+
+</body>
+
+</html>
+
+`;
+
+}
+
+
 document
-    .getElementById("export-pdf")
-    .onclick = () => {
+    .getElementById("export-dashboard")
+    .addEventListener("click", async () => {
 
-        alert("Export Dashboard is not implemented yet.");
+        if (!pod5)
+            return;
 
-    };
+        showLoading("Exporting Dashboard...");
+
+        try {
+
+            const html = await buildDashboardExportHtml();
+
+            const outputPath = await exportDashboard(
+                html,
+                pod5.filename
+            );
+
+            hideLoading();
+
+            alert(
+                `Dashboard exported:\n${outputPath}`
+            );
+
+        }
+
+        catch (err) {
+
+            hideLoading();
+
+            console.error(err);
+
+            alert(
+                "Export failed."
+            );
+
+        }
+
+    });
 
 
 /* ==========================================================
@@ -126,4 +275,8 @@ document
 
 document
     .getElementById("add-plot")
-    .onclick = addPlot;
+    .addEventListener("click", () => {
+
+        addPlot();
+
+    });

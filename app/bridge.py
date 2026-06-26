@@ -1,7 +1,13 @@
+from pathlib import Path
+from datetime import datetime
+import re
+
 from app.services.file_service import FileService
 from app.analyzer.pod5_analyzer import Pod5Analyzer
 from app.analyzer.pod5_metrics import Pod5Metrics
-
+from app.analyzer.pod5_plots import Pod5Plots
+from app.plot.x_axis import XAxis
+from app.plot.y_axis import YAxis
 
 class Api:
 
@@ -14,6 +20,8 @@ class Api:
         self.analyzer = None
 
         self.metrics = None
+
+        self.plots = None
 
     # ==========================================================
     # File
@@ -53,6 +61,10 @@ class Api:
         )
 
         self.metrics.calculate()
+
+        self.plots = Pod5Plots(
+            dataframe
+        )
 
         return True
 
@@ -100,12 +112,102 @@ class Api:
         return run_info
 
     # ==========================================================
-    # Data Sources
+    # Plot Options
     # ==========================================================
 
-    def get_columns(self):
+    def get_plot_options(self):
 
-        if self.analyzer is None:
-            return []
+        return {
 
-        return self.analyzer.columns()
+            "x": XAxis.names(),
+
+            "y": YAxis.names()
+
+        }
+
+    # ==========================================================
+    # Generate Plot
+    # ==========================================================
+
+    def generate_plot(
+        self,
+        x_name,
+        y_name,
+        bins=20
+    ):
+
+        if self.plots is None:
+            return ""
+
+        x = XAxis.value(x_name)
+
+        y = YAxis.value(y_name)
+
+        html = self.plots.histogram(
+            x=x,
+            y=y,
+            bins=bins
+        )
+
+        print("=" * 80)
+        print(type(html))
+        print(html[:500])
+        print("=" * 80)
+
+        return html
+
+    # ==========================================================
+    # Export Dashboard
+    # ==========================================================
+
+    def export_dashboard(
+        self,
+        html,
+        filename=None
+    ):
+
+        reports_dir = (
+                Path.home()
+                / "POD5Plot"
+                / "Reports"
+        )
+
+        reports_dir.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+        if filename:
+
+            base_name = Path(filename).stem
+
+        elif self.pod5 is not None:
+
+            base_name = Path(self.pod5.filename).stem
+
+        else:
+
+            base_name = "pod5_dashboard"
+
+        safe_name = re.sub(
+            r"[^A-Za-z0-9._-]",
+            "_",
+            base_name
+        )
+
+        timestamp = datetime.now().strftime(
+            "%Y%m%d_%H%M%S"
+        )
+
+        output_path = reports_dir / (
+            f"{safe_name}_dashboard_{timestamp}.html"
+        )
+
+        output_path.write_text(
+            html,
+            encoding="utf-8"
+        )
+
+        return str(
+            output_path.resolve()
+        )
