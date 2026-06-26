@@ -23,20 +23,35 @@ class Pod5Analyzer:
 
     def load(self) -> pd.DataFrame:
 
+        command = [
+            "pod5",
+            "view",
+            self.pod5_path
+        ]
+
+        run_options = {
+            "capture_output": True,
+            "text": True,
+            "check": True
+        }
+
+        if hasattr(subprocess, "STARTUPINFO"):
+
+            startupinfo = subprocess.STARTUPINFO()
+
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+
+            startupinfo.wShowWindow = subprocess.SW_HIDE
+
+            run_options["startupinfo"] = startupinfo
+
+        if hasattr(subprocess, "CREATE_NO_WINDOW"):
+
+            run_options["creationflags"] = subprocess.CREATE_NO_WINDOW
+
         result = subprocess.run(
-
-            [
-                "pod5",
-                "view",
-                self.pod5_path
-            ],
-
-            capture_output=True,
-
-            text=True,
-
-            check=True
-
+            command,
+            **run_options
         )
 
         self.dataframe = pd.read_csv(

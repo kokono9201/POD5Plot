@@ -114,36 +114,26 @@ document
 
 
 /* ==========================================================
-   Export
+   Export Dashboard
 ========================================================== */
 
 async function buildDashboardExportHtml() {
 
-    const dashboard = document
-        .getElementById("dashboard-page")
-        .cloneNode(true);
+    const sourceDashboard = document
+        .getElementById("dashboard-page");
+
+    const dashboard = sourceDashboard.cloneNode(true);
 
     dashboard.style.display = "block";
 
-    dashboard
-        .querySelectorAll("button")
-        .forEach(button => {
+    await replacePlotsWithImages(
+        sourceDashboard,
+        dashboard
+    );
 
-            button.remove();
-
-        });
-
-    dashboard
-        .querySelectorAll(".button-group")
-        .forEach(group => {
-
-            if (group.children.length === 0) {
-
-                group.remove();
-
-            }
-
-        });
+    cleanDashboardForExport(
+        dashboard
+    );
 
     let css = "";
 
@@ -182,7 +172,7 @@ async function buildDashboardExportHtml() {
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>${title}</title>
+    <title>${escapeHtml(title)}</title>
 
     <style>
 
@@ -198,13 +188,43 @@ async function buildDashboardExportHtml() {
             padding: 40px;
         }
 
-        .plot-output {
-            min-height: 500px;
-            width: 100%;
+        .plot-card {
+            page-break-inside: avoid;
+            break-inside: avoid;
         }
 
-        .plotly-graph-div {
-            min-height: 500px;
+        .plot-output {
+            width: 100%;
+            min-height: auto;
+            overflow: visible;
+        }
+
+        .export-plot-image {
+            display: block;
+            width: 100%;
+            height: auto;
+            margin-top: 20px;
+        }
+
+        .dashboard-header {
+            margin-bottom: 40px;
+        }
+
+        @media print {
+
+            body {
+                background: white;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .plot-card {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
         }
 
     </style>
@@ -224,6 +244,135 @@ async function buildDashboardExportHtml() {
 </html>
 
 `;
+
+}
+
+
+async function replacePlotsWithImages(
+    sourceDashboard,
+    clonedDashboard
+) {
+
+    const sourceOutputs = Array.from(
+        sourceDashboard.querySelectorAll(".plot-output")
+    );
+
+    const clonedOutputs = Array.from(
+        clonedDashboard.querySelectorAll(".plot-output")
+    );
+
+    for (let index = 0; index < sourceOutputs.length; index++) {
+
+        const sourceOutput = sourceOutputs[index];
+
+        const clonedOutput = clonedOutputs[index];
+
+        if (!clonedOutput)
+            continue;
+
+        const plotDiv = sourceOutput.querySelector(
+            ".js-plotly-plot, .plotly-graph-div"
+        );
+
+        if (!plotDiv)
+            continue;
+
+        if (!window.Plotly || !Plotly.toImage)
+            continue;
+
+        try {
+
+            const rect = plotDiv.getBoundingClientRect();
+
+            const width = Math.max(
+                Math.round(rect.width),
+                900
+            );
+
+            const height = Math.max(
+                Math.round(rect.height),
+                500
+            );
+
+            const image = await Plotly.toImage(
+                plotDiv,
+                {
+                    format: "png",
+                    width: width,
+                    height: height,
+                    scale: 2
+                }
+            );
+
+            clonedOutput.innerHTML = `
+
+                <img
+                    class="export-plot-image"
+                    src="${image}"
+                    alt="POD5Plot chart"
+                >
+
+            `;
+
+        }
+
+        catch (err) {
+
+            console.error(
+                "Failed to convert plot to image:",
+                err
+            );
+
+            clonedOutput.innerHTML = sourceOutput.innerHTML;
+
+        }
+
+    }
+
+}
+
+
+function cleanDashboardForExport(dashboard) {
+
+    dashboard
+        .querySelectorAll("button")
+        .forEach(button => {
+
+            button.remove();
+
+        });
+
+    dashboard
+        .querySelectorAll(".plot-grid")
+        .forEach(grid => {
+
+            grid.remove();
+
+        });
+
+    dashboard
+        .querySelectorAll(".button-group")
+        .forEach(group => {
+
+            if (group.children.length === 0) {
+
+                group.remove();
+
+            }
+
+        });
+
+}
+
+
+function escapeHtml(value) {
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 
 }
 
