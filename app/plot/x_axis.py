@@ -4,7 +4,9 @@ class XAxis:
 
         "End Time": "end_time",
 
-        "End Reason": "end_reason"
+        "End Reason": "end_reason",
+        
+        "Samples": "num_samples",
 
     }
 
