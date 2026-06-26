@@ -4,6 +4,7 @@ import subprocess
 from io import StringIO
 
 import pandas as pd
+from pod5 import Reader
 
 
 class Pod5Analyzer:
@@ -13,6 +14,8 @@ class Pod5Analyzer:
         self.pod5_path = pod5_path
 
         self.dataframe: pd.DataFrame | None = None
+
+        self.run_metadata = {}
 
     ###########################################################################
     # Load POD5
@@ -45,6 +48,8 @@ class Pod5Analyzer:
         )
 
         self.calculate_columns()
+
+        self.run_metadata = self.load_run_metadata()
 
         return self.dataframe
 
@@ -95,15 +100,8 @@ class Pod5Analyzer:
 
     def run_info(self):
 
-        """
-        Return metadata from the first read.
-
-        Fields whose value is identical for every read
-        (run_id, experiment_name, flow_cell_id, ...)
-        only need to be shown once.
-        """
-
         if self.dataframe is None:
+
             return {}
 
         row = self.dataframe.iloc[0].copy()
@@ -117,15 +115,56 @@ class Pod5Analyzer:
 
         for key, value in row.items():
 
-            if isinstance(value, (float, int, str, bool)):
+            run_info[key] = self.clean_value(
+                value
+            )
 
-                run_info[key] = value
+        for key, value in self.run_metadata.items():
 
-            else:
-
-                run_info[key] = str(value)
+            run_info[key] = self.clean_value(
+                value
+            )
 
         return run_info
+    # ==========================================================
+    # Helpers
+    # ==========================================================
+
+    def clean_value(
+        self,
+        value
+    ):
+
+        if hasattr(
+            value,
+            "item"
+        ):
+
+            value = value.item()
+
+        try:
+
+            if pd.isna(value):
+
+                return None
+
+        except Exception:
+
+            pass
+
+        if isinstance(
+            value,
+            (
+                str,
+                int,
+                float,
+                bool
+            )
+        ):
+
+            return value
+
+        return str(value)
 
     ###########################################################################
     # Data Sources
@@ -157,3 +196,107 @@ class Pod5Analyzer:
         return dataframe.to_dict(
             orient="records"
         )
+
+    # ==========================================================
+    # Run Metadata
+    # ==========================================================
+
+    def load_run_metadata(self):
+
+        metadata = {}
+
+        try:
+
+            with Reader(self.pod5_path) as reader:
+
+                first_read = next(
+                    iter(reader.reads()),
+                    None
+                )
+
+                if first_read is None:
+
+                    return metadata
+
+                run_info = first_read.run_info
+
+        except Exception:
+
+            return metadata
+
+        direct_fields = [
+
+            "acquisition_id",
+
+            "acquisition_start_time",
+
+            "experiment_name",
+
+            "flow_cell_id",
+
+            "flow_cell_product_code",
+
+            "protocol_name",
+
+            "protocol_run_id",
+
+            "protocol_start_time",
+
+            "sample_id",
+
+            "sample_rate",
+
+            "sequencing_kit",
+
+            "sequencer_position",
+
+            "sequencer_position_type",
+
+            "software",
+
+            "system_name",
+
+            "system_type",
+
+        ]
+
+        for field in direct_fields:
+
+            value = getattr(
+                run_info,
+                field,
+                None
+            )
+
+            if value is not None:
+
+                metadata[field] = self.clean_value(
+                    value
+                )
+
+        for dict_field in [
+            "tracking_id",
+            "context_tags"
+        ]:
+
+            values = getattr(
+                run_info,
+                dict_field,
+                None
+            )
+
+            if isinstance(values, dict):
+
+                for key, value in values.items():
+
+                    if key not in metadata:
+
+                        metadata[key] = self.clean_value(
+                            value
+                        )
+
+                    metadata[f"{dict_field}.{key}"] = self.clean_value(
+                        value
+                    )
+
+        return metadata

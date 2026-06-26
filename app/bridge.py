@@ -95,21 +95,120 @@ class Api:
     def get_run_info(self):
 
         if self.analyzer is None:
+
             return {}
 
-        run_info = {}
+        raw_info = self.analyzer.run_info()
 
-        for key, value in self.analyzer.run_info().items():
+        def clean_value(value):
 
             if hasattr(value, "item"):
+
                 value = value.item()
 
             if value != value:
-                value = None
 
-            run_info[key] = value
+                return ""
 
-        return run_info
+            if value is None:
+
+                return ""
+
+            return value
+
+        def pick(*keys):
+
+            for key in keys:
+
+                value = raw_info.get(key)
+
+                if value is not None and value != "":
+
+                    return clean_value(value)
+
+            return ""
+
+        return {
+
+            "filename":
+
+                self.pod5.filename
+                if self.pod5 is not None
+                else "",
+
+            "sample_rate":
+
+                pick(
+                    "sample_rate"
+                ),
+
+            "run_id":
+
+                pick(
+                    "run_id",
+                    "acquisition_id",
+                    "protocol_run_id"
+                ),
+
+            "sample_id":
+
+                pick(
+                    "sample_id"
+                ),
+
+            "experiment_id":
+
+                pick(
+                    "experiment_id",
+                    "experiment_name",
+                    "protocol_run_id"
+                ),
+
+            "flow_cell_id":
+
+                pick(
+                    "flow_cell_id"
+                ),
+
+            "sequencer_position":
+
+                pick(
+                    "sequencer_position"
+                ),
+
+            "sequencer_position_type":
+
+                pick(
+                    "sequencer_position_type"
+                ),
+
+            "sequencing_kit":
+
+                pick(
+                    "sequencing_kit"
+                ),
+
+            "software":
+
+                pick(
+                    "software",
+                    "version",
+                    "tracking_id.version"
+                ),
+
+            "system_name":
+
+                pick(
+                    "system_name"
+                ),
+
+            "system_type":
+
+                pick(
+                    "system_type"
+                ),
+
+        }
 
     # ==========================================================
     # Plot Options

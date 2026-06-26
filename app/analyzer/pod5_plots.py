@@ -274,16 +274,51 @@ class Pod5Plots:
     def _short_label(
         self,
         value,
-        max_length: int = 14
+        max_decimal_places: int = 4
     ):
 
-        text = self._full_label(value)
+        if pd.isna(value):
 
-        if len(text) > max_length:
+            return ""
 
-            return text[:max_length] + "..."
+        try:
 
-        return text
+            number = float(value)
+
+            if number.is_integer():
+
+                return str(
+                    int(number)
+                )
+
+            text = self._full_label(value)
+
+            if "." not in text:
+
+                return text
+
+            integer_part, decimal_part = text.split(
+                ".",
+                1
+            )
+
+            if len(decimal_part) > max_decimal_places:
+
+                return (
+                    integer_part
+                    +
+                    "."
+                    +
+                    decimal_part[:max_decimal_places]
+                    +
+                    "..."
+                )
+
+            return text
+
+        except Exception:
+
+            return str(value)
 
     def _full_label(
         self,
