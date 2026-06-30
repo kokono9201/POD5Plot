@@ -180,7 +180,9 @@ def main():
             MIN_WIDTH,
             MIN_HEIGHT
         ),
-        resizable=True
+        resizable=True,
+        zoomable=True,
+        text_select=True
     )
 
     webview.start()

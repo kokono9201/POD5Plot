@@ -1,0 +1,20 @@
+python -m PyInstaller `
+  --noconfirm `
+  --clean `
+  --onedir `
+  --windowed `
+  --name POD5Plot `
+  --add-data "app/templates;app/templates" `
+  --add-data "app/static;app/static" `
+  --hidden-import uvicorn.logging `
+  --hidden-import uvicorn.loops `
+  --hidden-import uvicorn.loops.auto `
+  --hidden-import uvicorn.protocols `
+  --hidden-import uvicorn.protocols.http `
+  --hidden-import uvicorn.protocols.http.auto `
+  --hidden-import uvicorn.lifespan `
+  --hidden-import uvicorn.lifespan.on `
+  --exclude-module polars `
+  --exclude-module polars_runtime_32 `
+  --exclude-module polars_runtime_64 `
+  launcher.py
